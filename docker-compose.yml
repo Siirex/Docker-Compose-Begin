@@ -1,0 +1,60 @@
+version: "3"
+
+networks:
+  netw:
+    driver: bridge
+
+volumes:
+  share-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/eboiii/Desktop/project/
+      o: bind
+
+services:
+
+  my-php:
+    container_name: phpserver
+    build:
+      dockerfile: Dockerfile
+      context: ./php-fpm/
+    hostname: phpserver
+    restart: always
+    networks:
+      - netw
+    volumes:
+      - share-data:/home/sites/default
+
+  my-httpd:
+    container_name: apacheserver
+    build:
+      dockerfile: Dockerfile
+      context: ./apache/
+    hostname: apacheserver
+    restart: always
+    networks:
+      - netw
+    volumes:
+      - share-data:/home/sites/default
+    ports:
+      - "6696:80"
+      - "443:443"
+
+  # container httpd:
+  my-mysql:
+    container_name: mysqlserver
+    image: "mysql:latest"
+    hostname: mysqlserver
+    restart: always
+    networks:
+      - netw
+    volumes:
+      - ./mysql/database:/var/lib/mysql
+      - ./mysql/my.cnf:/usr/local/apache2/conf/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=123
+      - MYSQL_DATABASE=db_hoangminh
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=123
+
